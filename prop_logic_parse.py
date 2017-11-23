@@ -333,6 +333,29 @@ def format_set_of_sets(clause_list):
 	str_out += '}'
 	return str_out
 
+def assign(root: LogicNode,symbol_values):
+	if (root is None):
+		return None
+	elif (isinstance(root,SymbolNode)):
+		return symbol_values[root.name]
+	elif (isinstance(root,UnaryOperatorNode)):
+		return not assign(root.operand,symbol_values)
+	elif (isinstance(root,BinaryOperatorNode)):
+		value1 = assign(root.operand1, symbol_values)
+		value2 = assign(root.operand2, symbol_values)
+		if (root.type == '|'):
+			return value1 or value2
+		elif (root.type == '&'):
+			return value1 and value2
+		elif (root.type == '->'):
+			return (not value1) or value2
+		elif (root.type == '<->'):
+			return value1 == value2
+		else:
+			return None
+	else:
+		return None
+
 def show_formula(str_inp):
 	symbol_set,formula = parse_string(str_inp)
 	print('Original formula: ',formula)
@@ -353,7 +376,7 @@ if __name__ == '__main__':
 	# f_str = '((((A & B) & C) & D) | E)'
 	# f_str = '~((A -> (~B & (C -> A))) -> B)'
 	# f_str = '~((P2 -> P4) -> (P3 & P4))'
-	f_str = '((A -> B) | ((A & ~C) <-> B))'
+	# f_str = '((A -> B) | ((A & ~C) <-> B))'
 	# f_str = 'A'
 	# f_str = '~A'
 	# f_str = '(A | B)'
@@ -361,4 +384,6 @@ if __name__ == '__main__':
 	# f_str = '(F <-> G)'
 	# f_str = '(F -> G)'
 	# f_str = '(G -> F)'
+	f_str = '~~~~~~~~~~A'
 	show_formula(f_str)
+	symbol_set,formula = parse_string(f_str)
