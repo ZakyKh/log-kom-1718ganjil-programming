@@ -74,7 +74,7 @@ class SymbolNode(LogicNode):
 	def __eq__(self, other):
 		return self.name == other.name
 
-def parse_logic(str_inp: str):
+def parse_string(str_inp: str):
 	symbol_set = set()
 	if (str_inp is None or len(str_inp) == 0):
 		return symbol_set,None
