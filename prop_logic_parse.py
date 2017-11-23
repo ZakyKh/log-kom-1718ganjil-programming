@@ -148,7 +148,7 @@ def open_macro_rec(root: LogicNode):
 			new_operand2 = open_macro(BinaryOperatorNode('->',operand2,operand1))
 		elif (root.type == '->'):
 			new_type = '|'
-			new_operand1 = UnaryOperatorNode('~',open_macro(operand1))
+			new_operand1 = negate(open_macro(operand1))
 			new_operand2 = open_macro(operand2)
 		else:
 			new_type = root.type
@@ -177,8 +177,8 @@ def to_nnf_rec(root: LogicNode):
 				new_type = '&'
 			else:
 				new_type = '|'
-			new_operand1 = to_nnf_rec(UnaryOperatorNode('~',root.operand.operand1))
-			new_operand2 = to_nnf_rec(UnaryOperatorNode('~',root.operand.operand2))
+			new_operand1 = to_nnf_rec(negate(root.operand.operand1))
+			new_operand2 = to_nnf_rec(negate(root.operand.operand2))
 			root = BinaryOperatorNode(new_type, new_operand1, new_operand2)
 	return root
 
