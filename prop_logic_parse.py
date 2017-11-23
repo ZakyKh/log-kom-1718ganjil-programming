@@ -1,4 +1,3 @@
-
 class LogicNode(object):
 	def __init__(self, parent=None): pass
 	
@@ -18,7 +17,7 @@ class OperatorNode(LogicNode):
 class UnaryOperatorNode(OperatorNode):
 	def __init__(self, type, operand: LogicNode, parent: LogicNode=None):
 		if (not isinstance(operand, LogicNode)):
-			raise ValueError('operand must be an instance of LogicNode')
+			raise TypeError('operand must be an instance of LogicNode')
 		else:
 			self.type = type
 			self.operand = operand
@@ -39,7 +38,7 @@ class UnaryOperatorNode(OperatorNode):
 class BinaryOperatorNode(OperatorNode):
 	def __init__(self, type, operand1: LogicNode, operand2: LogicNode, parent: LogicNode=None):
 		if (not isinstance(operand1, LogicNode) or not isinstance(operand2, LogicNode)):
-			raise ValueError('both operands must be instances of LogicNode')
+			raise TypeError('both operands must be instances of LogicNode')
 		else:
 			self.type = type
 			self.operand1 = operand1
@@ -63,9 +62,6 @@ class SymbolNode(LogicNode):
 		self.name = name
 		self.parent = parent
 	
-	def __eq__(self, other):
-		return self.name == other.name
-	
 	def __hash__(self):
 		return hash(self.name)
 	
@@ -74,6 +70,9 @@ class SymbolNode(LogicNode):
 	
 	def __str__(self):
 		return str(self.name)
+	
+	def __eq__(self, other):
+		return self.name == other.name
 
 def parse_logic(str_inp: str):
 	symbol_set = set()
@@ -207,6 +206,118 @@ def to_cnf_rec(root: LogicNode, true_root):
 		root.operand2 = new_operand2
 	return root
 
+def is_cnf(root: LogicNode):
+	return is_cnf_rec(root, '&')
+
+def is_cnf_rec(root: LogicNode, current_type):
+	# CNF in binary tree representation must follow:
+	# (n >= 0) times & => (m >= 0) times | => 0 or 1 time ~ => symbol
+	if root is None:
+		return True
+	elif current_type == '&':
+		if (isinstance(root,SymbolNode)):
+			return True
+		else:
+			if (isinstance(root,UnaryOperatorNode)):
+				return is_cnf_rec(root.operand, root.type)
+			else:
+				return is_cnf_rec(root.operand1, root.type) and is_cnf_rec(root.operand2, root.type)
+	elif current_type == '|':
+		if (isinstance(root,SymbolNode)):
+			return True
+		else:
+			if (isinstance(root,UnaryOperatorNode)):
+				return is_cnf_rec(root.operand, root.type)
+			else:
+				if root.type == '&':
+					return False
+				else:
+					return is_cnf_rec(root.operand1, root.type) and is_cnf_rec(root.operand2, root.type)
+	elif current_type == '~':
+		if (isinstance(root,SymbolNode)):
+			return True
+		else:
+			return False
+	else:
+		return False
+
+def get_set_of_clauses(root: LogicNode):
+	if (not is_cnf(root)):
+		raise ValueError('formula must be in CNF form')
+	return get_set_of_clauses_rec(root, set())
+
+def get_set_of_clauses_rec(root: LogicNode, clauses):
+	if root is None:
+		return clauses
+	elif (isinstance(root,SymbolNode)):
+		clauses.add(frozenset([root]))
+		return clauses
+	elif (isinstance(root,UnaryOperatorNode)):
+		clauses.add(frozenset([root]))
+		return clauses
+	elif (isinstance(root,BinaryOperatorNode)):
+		if (root.type == '|'):
+			clauses.add(frozenset(get_set_of_literals(root)))
+			return clauses
+		else:
+			return clauses.union(get_set_of_clauses_rec(root.operand1, clauses)).union(get_set_of_clauses_rec(root.operand2, clauses))
+	else:
+		return clauses
+
+def get_set_of_literals(root: LogicNode):
+	return get_set_of_literals_rec(root, set())
+
+def get_set_of_literals_rec(root: LogicNode, literals):
+	if root is None:
+		return literals
+	elif (isinstance(root,SymbolNode)):
+		return literals.union(set([root]))
+	elif (isinstance(root,UnaryOperatorNode)):
+		if (isinstance(root.operand,SymbolNode)):
+			return literals.union(set([root]))
+		else:
+			return get_set_of_literals_rec(root.operand, literals)
+	elif (isinstance(root,BinaryOperatorNode)):
+		return literals.union(get_set_of_literals_rec(root.operand1, literals)).union(get_set_of_literals_rec(root.operand2, literals))
+	else:
+		return literals
+
+def negate(root: LogicNode):
+	if root is None:
+		return None
+	elif (not isinstance(root,LogicNode)):
+		raise TypeError('root must be an instance of LogicNode')
+	else:
+		return UnaryOperatorNode('~',root)
+
+def simplify_cnf_set_of_sets(clauses):
+	new_set = set()
+	for clause in clauses:
+		new_clause = simplify_set_of_literals(clause)
+		if new_clause is None:
+			continue
+		if len(new_clause) == 0:
+			return set([frozenset()])
+		else:
+			new_set.add(frozenset(new_clause))
+	return new_set
+
+def simplify_set_of_literals(literals):
+	new_set = set()
+	for literal in literals:
+		negated_literal = to_nnf(negate(literal))
+		if negated_literal in new_set:
+			return None
+		elif literal not in new_set:
+			new_set.add(literal)
+	return new_set
+
+def sort_clauses(clauses):
+	return sorted([sort_literals(x) for x in clauses], key=lambda x:str(x))
+
+def sort_literals(literals):
+	return sorted([str(x) for x in literals], key=lambda x:str(x))
+
 def show_formula(str_inp):
 	symbol_set,formula = parse_logic(str_inp)
 	print('Original formula: ',formula)
@@ -215,6 +326,9 @@ def show_formula(str_inp):
 	print('Formula (without macro): ',open_macro(formula))
 	print('Formula (in NNF): ',to_nnf(formula))
 	print('Formula (in CNF): ',to_cnf(formula))
+	set_of_clauses = simplify_cnf_set_of_sets(get_set_of_clauses(to_cnf(formula)))
+	sorted_clauses = sort_clauses(set_of_clauses)
+	print('CNF in set of sets: ', sorted_clauses)
 
 # f_str = '(~(A -> B) & ((B | C) <-> A))'
 # f_str = '(~(P1 -> P2) & ((P2 | P3) <-> P1))'
@@ -223,9 +337,12 @@ def show_formula(str_inp):
 # f_str = '((((A & B) & C) & D) | E)'
 # f_str = '~((A -> (~B & (C -> A))) -> B)'
 # f_str = '~((P2 -> P4) -> (P3 & P4))'
-f_str = '((A1 -> B1) | ((A2 & ~C1) <-> B2))'
+f_str = '((A -> B) | ((A & ~C) <-> B))'
 # f_str = 'A'
+# f_str = '~A'
 # f_str = '(A | B)'
 # f_str = '(A & B)'
-
+# f_str = '(F <-> G)'
+# f_str = '(F -> G)'
+# f_str = '(G -> F)'
 show_formula(f_str)
