@@ -330,19 +330,20 @@ def show_formula(str_inp):
 	sorted_clauses = sort_clauses(set_of_clauses)
 	print('CNF in set of sets: ', sorted_clauses)
 
-# f_str = '(~(A -> B) & ((B | C) <-> A))'
-# f_str = '(~(P1 -> P2) & ((P2 | P3) <-> P1))'
-# f_str = '(~(P2 | P3) | P1)'
-# f_str = '((((A & B) | C) & D) | E)'
-# f_str = '((((A & B) & C) & D) | E)'
-# f_str = '~((A -> (~B & (C -> A))) -> B)'
-# f_str = '~((P2 -> P4) -> (P3 & P4))'
-f_str = '((A -> B) | ((A & ~C) <-> B))'
-# f_str = 'A'
-# f_str = '~A'
-# f_str = '(A | B)'
-# f_str = '(A & B)'
-# f_str = '(F <-> G)'
-# f_str = '(F -> G)'
-# f_str = '(G -> F)'
-show_formula(f_str)
+if __name__ == '__main__':
+	# f_str = '(~(A -> B) & ((B | C) <-> A))'
+	# f_str = '(~(P1 -> P2) & ((P2 | P3) <-> P1))'
+	# f_str = '(~(P2 | P3) | P1)'
+	# f_str = '((((A & B) | C) & D) | E)'
+	# f_str = '((((A & B) & C) & D) | E)'
+	# f_str = '~((A -> (~B & (C -> A))) -> B)'
+	# f_str = '~((P2 -> P4) -> (P3 & P4))'
+	f_str = '((A -> B) | ((A & ~C) <-> B))'
+	# f_str = 'A'
+	# f_str = '~A'
+	# f_str = '(A | B)'
+	# f_str = '(A & B)'
+	# f_str = '(F <-> G)'
+	# f_str = '(F -> G)'
+	# f_str = '(G -> F)'
+	show_formula(f_str)
