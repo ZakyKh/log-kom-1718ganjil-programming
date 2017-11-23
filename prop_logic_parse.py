@@ -318,6 +318,21 @@ def sort_clauses(clauses):
 def sort_literals(literals):
 	return sorted([str(x) for x in literals], key=lambda x:str(x))
 
+def format_set_of_sets(clause_list):
+	str_out = ''
+	str_out += '{'
+	for i,clause in enumerate(clause_list):
+		str_out += '{'
+		for j,literal in enumerate(clause):
+			str_out += literal
+			if (j < len(clause)-1):
+				str_out += ', '
+		str_out += '}'
+		if (i < len(clause_list)-1):
+			str_out += ', '
+	str_out += '}'
+	return str_out
+
 def show_formula(str_inp):
 	symbol_set,formula = parse_logic(str_inp)
 	print('Original formula: ',formula)
@@ -328,7 +343,7 @@ def show_formula(str_inp):
 	print('Formula (in CNF): ',to_cnf(formula))
 	set_of_clauses = simplify_cnf_set_of_sets(get_set_of_clauses(to_cnf(formula)))
 	sorted_clauses = sort_clauses(set_of_clauses)
-	print('CNF in set of sets: ', sorted_clauses)
+	print('CNF in set of sets: ', format_set_of_sets(sorted_clauses))
 
 if __name__ == '__main__':
 	# f_str = '(~(A -> B) & ((B | C) <-> A))'
