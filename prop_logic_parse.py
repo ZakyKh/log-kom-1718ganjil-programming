@@ -395,15 +395,15 @@ def show_formula(str_inp):
 	print('CNF in set of sets: ', format_set_of_sets(sorted_clauses))
 	print('Truth table:')
 	truth_table = build_truth_table(formula, symbol_set)
-	print(np.array(np.array(truth_table)))
+	print(np.array(truth_table))
 
 if __name__ == '__main__':
 	# f_str = '(~(A -> B) & ((B | C) <-> A))'
 	# f_str = '(~(P1 -> P2) & ((P2 | P3) <-> P1))'
 	# f_str = '(~(P2 | P3) | P1)'
-	f_str = '(((P2 -> P1) | ~P2) <-> P2)'
+	# f_str = '(((P2 -> P1) | ~P2) <-> P2)'
 	# f_str = '((((A & B) | C) & D) | E)'
-	# f_str = '((((A & B) & C) & D) | E)'
+	f_str = '((((A & B) & C) & D) | E)'
 	# f_str = '~((A -> (~B & (C -> A))) -> B)'
 	# f_str = '~((P2 -> P4) -> (P3 & P4))'
 	# f_str = '((A -> B) | ((A & ~C) <-> B))'
