@@ -1,3 +1,5 @@
+import numpy as np
+
 class LogicNode(object):
 	def __init__(self, parent=None): pass
 	
@@ -356,6 +358,30 @@ def assign(root: LogicNode,symbol_values):
 	else:
 		return None
 
+def build_truth_table(formula: LogicNode, symbol_set):
+	symbol_count = len(symbol_set)
+	table = []
+	symbol_list = sorted(list(symbol_set))
+	symbol_list.append('F')
+	table.append(symbol_list)
+	i = 0
+	while (i < (2**symbol_count)):
+		truth_bitmask = i
+		assignment = {}
+		row = []
+		for j in range(0,symbol_count):
+			symbol = symbol_list[symbol_count-j-1]
+			truth_val = truth_bitmask % 2
+			assignment[symbol] = truth_val
+			row.append(truth_val)
+			truth_bitmask = truth_bitmask // 2
+		assign_val = 1 if assign(formula,assignment) else 0
+		row.reverse()
+		row.append(assign_val)
+		table.append(row)
+		i += 1
+	return table
+
 def show_formula(str_inp):
 	symbol_set,formula = parse_string(str_inp)
 	print('Original formula: ',formula)
@@ -367,11 +393,15 @@ def show_formula(str_inp):
 	set_of_clauses = simplify_cnf_set_of_sets(get_set_of_clauses(to_cnf(formula)))
 	sorted_clauses = sort_clauses(set_of_clauses)
 	print('CNF in set of sets: ', format_set_of_sets(sorted_clauses))
+	print('Truth table:')
+	truth_table = build_truth_table(formula, symbol_set)
+	print(np.array(np.array(truth_table)))
 
 if __name__ == '__main__':
 	# f_str = '(~(A -> B) & ((B | C) <-> A))'
 	# f_str = '(~(P1 -> P2) & ((P2 | P3) <-> P1))'
 	# f_str = '(~(P2 | P3) | P1)'
+	f_str = '(((P2 -> P1) | ~P2) <-> P2)'
 	# f_str = '((((A & B) | C) & D) | E)'
 	# f_str = '((((A & B) & C) & D) | E)'
 	# f_str = '~((A -> (~B & (C -> A))) -> B)'
@@ -384,6 +414,6 @@ if __name__ == '__main__':
 	# f_str = '(F <-> G)'
 	# f_str = '(F -> G)'
 	# f_str = '(G -> F)'
-	f_str = '~~~~~~~~~~A'
+	# f_str = '~~~~~~~~~~A'
 	show_formula(f_str)
 	symbol_set,formula = parse_string(f_str)
