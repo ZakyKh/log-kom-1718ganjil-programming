@@ -82,7 +82,7 @@ def parse_string(str_inp: str):
 		symbol_set.add(str_inp)
 		return symbol_set,SymbolNode(str_inp)
 	elif (str_inp[0] == '~'):
-		symbol_set,child_node = parse_logic(str_inp[1:])
+		symbol_set,child_node = parse_string(str_inp[1:])
 		return symbol_set,UnaryOperatorNode('~',child_node)
 	elif(str_inp[0] == '('):
 		parentheses_count = 0
@@ -117,8 +117,8 @@ def parse_string(str_inp: str):
 			operand1_end_idx = operator_idx-1
 			operator = str_inp[operator_idx]
 			operand2_start_idx = operator_idx+2
-		symbol_set_1,child_node_1 = parse_logic(str_inp[1:operand1_end_idx])
-		symbol_set_2,child_node_2 = parse_logic(str_inp[operand2_start_idx:length-1])
+		symbol_set_1,child_node_1 = parse_string(str_inp[1:operand1_end_idx])
+		symbol_set_2,child_node_2 = parse_string(str_inp[operand2_start_idx:length-1])
 		return symbol_set_1.union(symbol_set_2),BinaryOperatorNode(operator, child_node_1, child_node_2)
 
 def copy_formula(root: LogicNode):
@@ -334,7 +334,7 @@ def format_set_of_sets(clause_list):
 	return str_out
 
 def show_formula(str_inp):
-	symbol_set,formula = parse_logic(str_inp)
+	symbol_set,formula = parse_string(str_inp)
 	print('Original formula: ',formula)
 	print('Symbols: ',symbol_set)
 	print('Formula tree: ',repr(formula))
