@@ -27,8 +27,14 @@ class UnaryOperatorNode(OperatorNode):
 	def __eq__(self, other):	
 		return self.type == other.type and self.operand == other.operand
 	
+	def __hash__(self):
+		return 17 * hash(self.type) + hash(self.operand)
+	
+	def __repr__(self):
+		return repr(self.type) + '(' + repr(self.operand) + ')'
+	
 	def __str__(self):
-		return str(self.type) + '(' + str(self.operand) + ')'
+		return str(self.type) + str(self.operand)
 
 class BinaryOperatorNode(OperatorNode):
 	def __init__(self, type, operand1: LogicNode, operand2: LogicNode, parent: LogicNode=None):
@@ -43,8 +49,14 @@ class BinaryOperatorNode(OperatorNode):
 	def __eq__(self, other):
 		return self.name == other.name and self.type == other.type and self.operand1 == other.operand1 and self.operand2 == other.operand2
 	
+	def __hash__(self):
+		return 31 * hash(self.type) +  17 * hash(self.operand1) + hash(self.operand2)
+	
+	def __repr__(self):
+		return repr(self.type) + '(' + repr(self.operand1) + ',' + repr(self.operand2) + ')'
+	
 	def __str__(self):
-		return str(self.type) + '(' + str(self.operand1) + ',' + str(self.operand2) + ')'
+		return '(' + str(self.operand1) + ' ' + str(self.type) + ' ' + str(self.operand2) + ')'
 
 class SymbolNode(LogicNode):
 	def __init__(self, name, parent: LogicNode=None):
@@ -54,8 +66,14 @@ class SymbolNode(LogicNode):
 	def __eq__(self, other):
 		return self.name == other.name
 	
+	def __hash__(self):
+		return hash(self.name)
+	
+	def __repr__(self):
+		return repr(self.name)
+	
 	def __str__(self):
-		return self.name
+		return str(self.name)
 
 def parse_logic(str_inp: str):
 	symbol_set = set()
@@ -167,23 +185,23 @@ def to_nnf_rec(root: LogicNode):
 
 def to_cnf(root: LogicNode):
 	root = to_nnf(copy_formula(root))
-	return to_cnf_rec(root)
+	return to_cnf_rec(root, root)
 
-def to_cnf_rec(root: LogicNode):
+def to_cnf_rec(root: LogicNode, true_root):
 	if (root is None or isinstance(root,SymbolNode) or isinstance(root,UnaryOperatorNode)):
 		return root
 	elif (isinstance(root,BinaryOperatorNode)):
 		new_type = root.type
-		new_operand1 = to_cnf_rec(root.operand1)
-		new_operand2 = to_cnf_rec(root.operand2)
+		new_operand1 = to_cnf_rec(root.operand1, true_root)
+		new_operand2 = to_cnf_rec(root.operand2, true_root)
 		if (root.type == '|' and ((isinstance(root.operand1,BinaryOperatorNode) and root.operand1.type == '&') or (isinstance(root.operand2,BinaryOperatorNode) and root.operand2.type == '&'))):
 			new_type = '&'
 			if (isinstance(root.operand1,BinaryOperatorNode) and root.operand1.type == '&'):
-				new_operand1 = to_cnf_rec(BinaryOperatorNode('|',root.operand1.operand1,root.operand2))
-				new_operand2 = to_cnf_rec(BinaryOperatorNode('|',root.operand1.operand2,root.operand2))
+				new_operand1 = to_cnf_rec(BinaryOperatorNode('|',root.operand1.operand1,root.operand2), true_root)
+				new_operand2 = to_cnf_rec(BinaryOperatorNode('|',root.operand1.operand2,root.operand2), true_root)
 			else:
-				new_operand1 = to_cnf_rec(BinaryOperatorNode('|',root.operand2.operand1,root.operand1))
-				new_operand2 = to_cnf_rec(BinaryOperatorNode('|',root.operand2.operand2,root.operand1))
+				new_operand1 = to_cnf_rec(BinaryOperatorNode('|',root.operand2.operand1,root.operand1), true_root)
+				new_operand2 = to_cnf_rec(BinaryOperatorNode('|',root.operand2.operand2,root.operand1), true_root)
 		root.type = new_type
 		root.operand1 = new_operand1
 		root.operand2 = new_operand2
@@ -191,15 +209,23 @@ def to_cnf_rec(root: LogicNode):
 
 def show_formula(str_inp):
 	symbol_set,formula = parse_logic(str_inp)
+	print('Original formula: ',formula)
 	print('Symbols: ',symbol_set)
-	print('Formula tree: ',formula)
-	print('Formula tree (without macro): ',open_macro(formula))
-	print('Formula tree (in NNF): ',to_nnf(formula))
-	print('Formula tree (in CNF): ',to_cnf(formula))
+	print('Formula tree: ',repr(formula))
+	print('Formula (without macro): ',open_macro(formula))
+	print('Formula (in NNF): ',to_nnf(formula))
+	print('Formula (in CNF): ',to_cnf(formula))
 
 # f_str = '(~(A -> B) & ((B | C) <-> A))'
 # f_str = '(~(P1 -> P2) & ((P2 | P3) <-> P1))'
 # f_str = '(~(P2 | P3) | P1)'
 # f_str = '((((A & B) | C) & D) | E)'
 # f_str = '((((A & B) & C) & D) | E)'
-f_str = '~((A -> (~B & (C -> A))) -> B)'
+# f_str = '~((A -> (~B & (C -> A))) -> B)'
+# f_str = '~((P2 -> P4) -> (P3 & P4))'
+f_str = '((A1 -> B1) | ((A2 & ~C1) <-> B2))'
+# f_str = 'A'
+# f_str = '(A | B)'
+# f_str = '(A & B)'
+
+show_formula(f_str)
