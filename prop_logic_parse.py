@@ -284,13 +284,35 @@ def get_set_of_literals_rec(root: LogicNode, literals):
 	else:
 		return literals
 
-def negate(root: LogicNode):
-	if root is None:
-		return None
-	elif (not isinstance(root,LogicNode)):
-		raise TypeError('root must be an instance of LogicNode')
+def conjunct(operand1: LogicNode, operand2: LogicNode)
+	if (not isinstance(operand1,LogicNode) or not isinstance(operand2,LogicNode)):
+		raise TypeError('both operands must be instances of LogicNode')
 	else:
-		return UnaryOperatorNode('~',root)
+		return BinaryOperatorNode('&',operand1,operand2)
+
+def disjunct(operand1: LogicNode, operand2: LogicNode)
+	if (not isinstance(operand1,LogicNode) or not isinstance(operand2,LogicNode)):
+		raise TypeError('both operands must be instances of LogicNode')
+	else:
+		return BinaryOperatorNode('&',operand1,operand2)
+
+def negate(operand: LogicNode):
+	if (not isinstance(operand,LogicNode)):
+		raise TypeError('operand must be an instance of LogicNode')
+	else:
+		return UnaryOperatorNode('~',operand)
+
+def imply(operand1: LogicNode, operand2: LogicNode)
+	if (not isinstance(operand1,LogicNode) or not isinstance(operand2,LogicNode)):
+		raise TypeError('both operands must be instances of LogicNode')
+	else:
+		return BinaryOperatorNode('->',operand1,operand2)
+
+def biimply(operand1: LogicNode, operand2: LogicNode)
+	if (not isinstance(operand1,LogicNode) or not isinstance(operand2,LogicNode)):
+		raise TypeError('both operands must be instances of LogicNode')
+	else:
+		return BinaryOperatorNode('<->',operand1,operand2)
 
 def simplify_cnf_set_of_sets(clauses):
 	new_set = set()
@@ -398,12 +420,12 @@ def show_formula(str_inp):
 	print(np.array(truth_table))
 
 if __name__ == '__main__':
-	# f_str = '(~(A -> B) & ((B | C) <-> A))'
+	f_str = '(~(A -> B) & ((B | C) <-> A))'
 	# f_str = '(~(P1 -> P2) & ((P2 | P3) <-> P1))'
 	# f_str = '(~(P2 | P3) | P1)'
 	# f_str = '(((P2 -> P1) | ~P2) <-> P2)'
 	# f_str = '((((A & B) | C) & D) | E)'
-	f_str = '((((A & B) & C) & D) | E)'
+	# f_str = '((((A & B) & C) & D) | E)'
 	# f_str = '~((A -> (~B & (C -> A))) -> B)'
 	# f_str = '~((P2 -> P4) -> (P3 & P4))'
 	# f_str = '((A -> B) | ((A & ~C) <-> B))'
