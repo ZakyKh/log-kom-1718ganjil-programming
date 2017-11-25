@@ -27,7 +27,7 @@ def print_entailment_check(kb_formula: prop_logic_parse.LogicNode, alpha_formula
 	print('print entailment check process for',kb_formula,'and',alpha_formula)
 	pass
 
-def get_formulas_str(str_inp):
+def get_formulas(str_inp):
 	bracket_count = 0
 	breakpoints = []
 	for i in range(len(inp_split[1])):
@@ -38,32 +38,27 @@ def get_formulas_str(str_inp):
 		elif inp_split[1][i] == ')':
 			bracket_count -= 1
 	if len(breakpoints) == 0:
-		return [str_inp]
+		return [parse_string(str_inp)]
 	else:
-		return [str_inp[i+1:j] for i,j in zip([-1] + breakpoints, breakpoints + [len(str_inp)])]
+		return [parse_string(str_inp[i+1:j]) for i,j in zip([-1] + breakpoints, breakpoints + [len(str_inp)])]
 	
 if __name__ == '__main__':
 	n = int(input())
 	for i in range(n):
 		inp_split = input().split(maxsplit=1)
 		cmd = inp_split[0]
-		formulas = get_formulas_str(inp_split[1])
-		print(formulas)
+		formulas = get_formulas(inp_split[1])
 		if (cmd == 'sub'):
-			pass
-			# print_subformula(formula)
+			print_subformula(formulas[0])
 		elif (cmd == 'tt'):
-			pass
-			# print_truth_table(formula)
+			print_truth_table(formulas[0])
 		elif (cmd == 'ecnf'):
-			pass
-			# print_equivalent_cnf(formula)
+			print_equivalent_cnf(formulas[0])
 		elif (cmd == 'res'):
-			pass
-			# print_resolution_process(formula)
+			print_resolution_process(formulas[0])
 		elif (cmd == 'valid'):
-			pass
-			# print_validation_check_process(formula)
+			print_validation_check_process(formulas[0])
 		elif (cmd == 'ent'):
-			pass
-			# print_entailment_check(kb_formula,alpha_formula)
+			kb_formula = formulas[0]
+			for alpha_formula in formulas[1:]:
+				print_entailment_check(kb_formula,alpha_formula)
