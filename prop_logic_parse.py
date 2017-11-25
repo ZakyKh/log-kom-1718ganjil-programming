@@ -435,7 +435,7 @@ def show_formula(str_inp):
 	print('CNF in set of sets: ', format_set_of_sets(sorted_clauses))
 	print('Truth table:')
 	truth_table = build_truth_table(formula, symbol_set)
-	print(np.array(truth_table))\
+	print(np.array(truth_table))
 
 if __name__ == '__main__':
 	f_str = '(~(A -> B) & ((B | C) <-> A))'
