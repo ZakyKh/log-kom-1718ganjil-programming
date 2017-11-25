@@ -31,7 +31,10 @@ def print_truth_table(formula: prop_logic_parse.LogicNode):
 	pass
 
 def print_equivalent_cnf(formula: prop_logic_parse.LogicNode):
-	print('print equivalent cnf for',formula)
+	symbol_set,formula_root = formula
+	formula_cnf = prop_logic_parse.to_cnf(formula_root)
+	clauses = prop_logic_parse.simplify_cnf_set_of_sets(prop_logic_parse.get_set_of_clauses(formula_cnf))
+	print(prop_logic_parse.format_set_of_sets(prop_logic_parse.sort_clauses(clauses)))
 	pass
 
 def print_resolution_process(formula: prop_logic_parse.LogicNode):
