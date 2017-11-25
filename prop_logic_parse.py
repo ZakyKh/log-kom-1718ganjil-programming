@@ -284,13 +284,13 @@ def get_set_of_literals_rec(root: LogicNode, literals):
 	else:
 		return literals
 
-def conjunct(operand1: LogicNode, operand2: LogicNode)
+def conjunct(operand1: LogicNode, operand2: LogicNode):
 	if (not isinstance(operand1,LogicNode) or not isinstance(operand2,LogicNode)):
 		raise TypeError('both operands must be instances of LogicNode')
 	else:
 		return BinaryOperatorNode('&',operand1,operand2)
 
-def disjunct(operand1: LogicNode, operand2: LogicNode)
+def disjunct(operand1: LogicNode, operand2: LogicNode):
 	if (not isinstance(operand1,LogicNode) or not isinstance(operand2,LogicNode)):
 		raise TypeError('both operands must be instances of LogicNode')
 	else:
@@ -302,13 +302,13 @@ def negate(operand: LogicNode):
 	else:
 		return UnaryOperatorNode('~',operand)
 
-def imply(operand1: LogicNode, operand2: LogicNode)
+def imply(operand1: LogicNode, operand2: LogicNode):
 	if (not isinstance(operand1,LogicNode) or not isinstance(operand2,LogicNode)):
 		raise TypeError('both operands must be instances of LogicNode')
 	else:
 		return BinaryOperatorNode('->',operand1,operand2)
 
-def biimply(operand1: LogicNode, operand2: LogicNode)
+def biimply(operand1: LogicNode, operand2: LogicNode):
 	if (not isinstance(operand1,LogicNode) or not isinstance(operand2,LogicNode)):
 		raise TypeError('both operands must be instances of LogicNode')
 	else:
