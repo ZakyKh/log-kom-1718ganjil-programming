@@ -438,7 +438,7 @@ def show_formula(str_inp):
 	print(np.array(truth_table))
 
 if __name__ == '__main__':
-	f_str = '(~(A -> B) & ((B | C) <-> A))'
+	# f_str = '(~(A -> B) & ((B | C) <-> A))'
 	# f_str = '(~(P1 -> P2) & ((P2 | P3) <-> P1))'
 	# f_str = '(~(P2 | P3) | P1)'
 	# f_str = '(((P2 -> P1) | ~P2) <-> P2)'
@@ -454,6 +454,6 @@ if __name__ == '__main__':
 	# f_str = '(F <-> G)'
 	# f_str = '(F -> G)'
 	# f_str = '(G -> F)'
-	# f_str = '~~~~~~~~~~A'
+	f_str = '~~~~~~~~~A'
 	show_formula(f_str)
 	symbol_set,formula = parse_string(f_str)
