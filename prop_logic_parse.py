@@ -486,7 +486,7 @@ def print_normal_rec(root: LogicNode):
 # 	return set_of_clauses
 
 def resolve(clauses):
-	to_remove = set()
+	cont = False
 	temp_clause = set()
 
 	for clause in clauses:
@@ -502,30 +502,37 @@ def resolve(clauses):
 	for clause1 in clauses:
 		for clause2 in clauses:
 			to_be_resolved = False
+			temp_clause = set()
 			if(clause1 == clause2):
 				continue
 			for literal1 in clause1:
-				temp_clause = set()
 				for literal2 in clause2:
 					if(negate_simplify(literal1) == literal2):
 						to_be_resolved = True
+						cont = True
 						temp_clause.add(literal1)
 						temp_clause.add(negate_simplify(literal1))
 			if to_be_resolved:
 				tmp = (clause1 | clause2).difference(temp_clause)
+				if len(tmp) == 0:
+					return set()
 				result_set.add(tmp)
-			else:
-				result_set.add(clause1)
+			result_set.add(clause1)
+	if cont:
+		result_set.add(frozenset(resolve(result_set)))
+	for s in result_set:
+		if len(s) == 0:
+			return set()
 	return result_set
 
 def show_formula(str_inp):
 	symbol_set,formula = parse_string(str_inp)
-	print('Original formula: ',formula)
-	print('Symbols: ',symbol_set)
-	print('Formula tree: ',repr(formula))
-	print('Formula (without macro): ',open_macro(formula))
-	print('Formula (in NNF): ',to_nnf(formula))
-	print('Formula (in CNF): ',to_cnf(formula))
+	# print('Original formula: ',formula)
+	# print('Symbols: ',symbol_set)
+	# print('Formula tree: ',repr(formula))
+	# print('Formula (without macro): ',open_macro(formula))
+	# print('Formula (in NNF): ',to_nnf(formula))
+	# print('Formula (in CNF): ',to_cnf(formula))
 	set_of_clauses = simplify_cnf_set_of_sets(get_set_of_clauses(to_cnf(formula)))
 	sorted_clauses = sort_clauses(set_of_clauses)
 	print('CNF in set of sets: ', format_set_of_sets(sorted_clauses))
@@ -554,6 +561,8 @@ if __name__ == '__main__':
 	# f_str = '(G -> F)'
 	# f_str = '~~~~~~~~~A'
 	# f_str = '(((P -> Q) -> (R -> S)) & (Q -> R))'
-	f_str = '((~A | B) & (~B | C))'
+	# f_str = '((~A | B) & (~B | C))'
+	f_str = '(((~A | B) & (~B | C)) & (~C | ~A))'
+	# f_str = '(((A | ~B) & B) & ~A)'
 	show_formula(f_str)
 	symbol_set,formula = parse_string(f_str)
