@@ -302,6 +302,15 @@ def negate(operand: LogicNode):
 	else:
 		return UnaryOperatorNode('~',operand)
 
+def negate_simplify(operand: LogicNode):
+	if (not isinstance(operand,LogicNode)):
+		raise TypeError('operand must be an instance of LogicNode')
+	else:
+		negated = negate(operand)
+		while (isinstance(negated,UnaryOperatorNode) and negated.type == '~' and isinstance(negated.operand,UnaryOperatorNode) and negated.operand.type == '~'):
+			negated = negated.operand.operand
+		return negated
+
 def imply(operand1: LogicNode, operand2: LogicNode):
 	if (not isinstance(operand1,LogicNode) or not isinstance(operand2,LogicNode)):
 		raise TypeError('both operands must be instances of LogicNode')
@@ -417,7 +426,7 @@ def show_formula(str_inp):
 	print('CNF in set of sets: ', format_set_of_sets(sorted_clauses))
 	print('Truth table:')
 	truth_table = build_truth_table(formula, symbol_set)
-	print(np.array(truth_table))
+	print(np.array(truth_table))\
 
 if __name__ == '__main__':
 	f_str = '(~(A -> B) & ((B | C) <-> A))'
