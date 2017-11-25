@@ -25,7 +25,9 @@ class UnaryOperatorNode(OperatorNode):
 			self.operand = operand
 			self.parent = parent
 	
-	def __eq__(self, other):	
+	def __eq__(self, other):
+		if not isinstance(other, UnaryOperatorNode):
+			return False	
 		return self.type == other.type and self.operand == other.operand
 	
 	def __hash__(self):
@@ -48,6 +50,8 @@ class BinaryOperatorNode(OperatorNode):
 			self.parent = parent
 	
 	def __eq__(self, other):
+		if not isinstance(other, BinaryOperatorNode):
+			return False
 		return self.name == other.name and self.type == other.type and self.operand1 == other.operand1 and self.operand2 == other.operand2
 	
 	def __hash__(self):
@@ -74,6 +78,8 @@ class SymbolNode(LogicNode):
 		return str(self.name)
 	
 	def __eq__(self, other):
+		if not isinstance(other, SymbolNode):
+			return False
 		return self.name == other.name
 
 def parse_string(str_inp: str):
@@ -428,16 +434,24 @@ def build_truth_table(formula: LogicNode, symbol_set):
 		i += 1
 	return table
 
+def print_sub(root: LogicNode):
+	return "\n".join(str(e) for e in sub_rec(copy_formula(root)))
+
+def print_set(s):
+	return ", ".join(str(e) for e in s)
+
 def sub(root: LogicNode):
 	return sub_rec(copy_formula(root))
 
 def sub_rec(root: LogicNode):
-	print(print_normal(root))
+	to_print = set()
+	to_print.add(print_normal(root))
 	if (isinstance(root, UnaryOperatorNode)):
-		sub_rec(root.operand)
+		to_print = to_print | sub_rec(root.operand)
 	elif (isinstance(root, BinaryOperatorNode)):
-		sub_rec(root.operand1)
-		sub_rec(root.operand2)
+		to_print = to_print | sub_rec(root.operand1)
+		to_print = to_print | sub_rec(root.operand2)
+	return to_print
 
 def print_normal(root: LogicNode):
 	return print_normal_rec(root)
@@ -453,39 +467,56 @@ def print_normal_rec(root: LogicNode):
 	elif (isinstance(root, BinaryOperatorNode)):
 		return '(' + print_normal_rec(root.operand1) + ' ' + root.type + ' ' + print_normal_rec(root.operand2) + ')'
 
-def cnf_to_set(root: LogicNode):
-	set_of_clauses = set()
-	clause_lits = set()
-	if (isinstance(root, BinaryOperatorNode) and root.type == '&'):
-		set_of_clauses.add(cnf_to_set(root.operand1))
-		set_of_clauses.add(cnf_to_set(root.operand2))
-	elif (isinstance(root, BinaryOperatorNode) and root.type == '|'):
-		if(isinstance(root.operand1, UnaryOperatorNode)):
-			clause_lits.add('~' + root.operand2.name)
-		else:
-			clause_lits.add(root.name)
-		if(isinstance(root.operand2, UnaryOperatorNode)):
-			clause_lits.add('~' + root.operand2.name)
-		else:
-			clause_lits.add(root.name)
-		set_of_clauses.add(clause_lits)
-	return set_of_clauses
+# def cnf_to_set(root: LogicNode):
+# 	set_of_clauses = set()
+# 	clause_lits = set()
+# 	if (isinstance(root, BinaryOperatorNode) and root.type == '&'):
+# 		set_of_clauses.add(cnf_to_set(root.operand1))
+# 		set_of_clauses.add(cnf_to_set(root.operand2))
+# 	elif (isinstance(root, BinaryOperatorNode) and root.type == '|'):
+# 		if(isinstance(root.operand1, UnaryOperatorNode)):
+# 			clause_lits.add('~' + root.operand1.operand.name)
+# 		else:
+# 			clause_lits.add(root.operand1.name)
+# 		if(isinstance(root.operand2, UnaryOperatorNode)):
+# 			clause_lits.add('~' + root.operand2.operand.name)
+# 		else:
+# 			clause_lits.add(root.operand1.name)
+# 		set_of_clauses.add(clause_lits)
+# 	return set_of_clauses
 
 def resolve(clauses):
 	to_remove = set()
+	temp_clause = set()
+
+	for clause in clauses:
+		temp_set = simplify_set_of_literals(clause)
+		if temp_set is None:
+			continue
+		else:
+			frozen = frozenset(temp_set)
+			temp_clause.add(frozen)
+	clauses = temp_clause
+
+	result_set = set()
 	for clause1 in clauses:
 		for clause2 in clauses:
+			to_be_resolved = False
 			if(clause1 == clause2):
 				continue
 			for literal1 in clause1:
 				temp_clause = set()
-				for literal2 in clause1:
-					if literal1 != literal2:
-						temp_clause.add(literal2)
-				temp_clause.add(negate_lit(literal1))
-				if(clause2 == temp_clause):
-					to_remove.add(clause2)
-	return clauses.difference(to_remove)
+				for literal2 in clause2:
+					if(negate_simplify(literal1) == literal2):
+						to_be_resolved = True
+						temp_clause.add(literal1)
+						temp_clause.add(negate_simplify(literal1))
+			if to_be_resolved:
+				tmp = (clause1 | clause2).difference(temp_clause)
+				result_set.add(tmp)
+			else:
+				result_set.add(clause1)
+	return result_set
 
 def show_formula(str_inp):
 	symbol_set,formula = parse_string(str_inp)
@@ -498,9 +529,11 @@ def show_formula(str_inp):
 	set_of_clauses = simplify_cnf_set_of_sets(get_set_of_clauses(to_cnf(formula)))
 	sorted_clauses = sort_clauses(set_of_clauses)
 	print('CNF in set of sets: ', format_set_of_sets(sorted_clauses))
-	print('Truth table:')
-	truth_table = build_truth_table(formula, symbol_set)
-	print(np.array(truth_table))
+	# print('Truth table:')
+	# truth_table = build_truth_table(formula, symbol_set)
+	# print(np.array(truth_table))
+	# print('subtrees: ' + print_sub(formula))
+	print('resolution: ' + print_set(resolve(get_set_of_clauses(to_cnf(formula)))))
 
 if __name__ == '__main__':
 	# f_str = '(~(A -> B) & ((B | C) <-> A))'
@@ -519,6 +552,8 @@ if __name__ == '__main__':
 	# f_str = '(F <-> G)'
 	# f_str = '(F -> G)'
 	# f_str = '(G -> F)'
-	f_str = '~~~~~~~~~A'
+	# f_str = '~~~~~~~~~A'
+	# f_str = '(((P -> Q) -> (R -> S)) & (Q -> R))'
+	f_str = '((~A | B) & (~B | C))'
 	show_formula(f_str)
 	symbol_set,formula = parse_string(f_str)
