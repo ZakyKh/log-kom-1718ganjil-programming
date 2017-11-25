@@ -8,7 +8,26 @@ def print_subformula(formula: prop_logic_parse.LogicNode):
 	pass
 
 def print_truth_table(formula: prop_logic_parse.LogicNode):
-	print('print truth table for',formula)
+	symbol_set,formula_root = formula
+	truth_table = prop_logic_parse.build_truth_table(formula_root,symbol_set)
+	row_count = len(truth_table)-1
+	col_count = len(truth_table[0])
+	header_len = []
+	header_str = ''
+	for i in range(col_count):
+		header_entry = truth_table[0][i]
+		header_len.append(len(header_entry))
+		header_str += header_entry
+		if i < col_count-1:
+			header_str += ' '
+	print(header_str)
+	for i in range(1,row_count+1):
+		row_str = ''
+		for j in range(col_count):
+			row_str += ('{truth_val:<' + str(header_len[j]) + 'd}').format(truth_val=truth_table[i][j])
+			if j < col_count-1:
+				row_str += ' '
+		print(row_str)
 	pass
 
 def print_equivalent_cnf(formula: prop_logic_parse.LogicNode):
