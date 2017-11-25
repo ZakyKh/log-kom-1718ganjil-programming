@@ -302,6 +302,12 @@ def negate(operand: LogicNode):
 	else:
 		return UnaryOperatorNode('~',operand)
 
+def negate_lit(operand):
+	if (len(operand) == 1):
+		return '~' + operand
+	else:
+		return operand[1:]
+
 def negate_simplify(operand: LogicNode):
 	if (not isinstance(operand,LogicNode)):
 		raise TypeError('operand must be an instance of LogicNode')
@@ -421,6 +427,65 @@ def build_truth_table(formula: LogicNode, symbol_set):
 		table.append(row)
 		i += 1
 	return table
+
+def sub(root: LogicNode):
+	return sub_rec(copy_formula(root))
+
+def sub_rec(root: LogicNode):
+	print(print_normal(root))
+	if (isinstance(root, UnaryOperatorNode)):
+		sub_rec(root.operand)
+	elif (isinstance(root, BinaryOperatorNode)):
+		sub_rec(root.operand1)
+		sub_rec(root.operand2)
+
+def print_normal(root: LogicNode):
+	return print_normal_rec(root)
+
+def print_normal_rec(root: LogicNode):
+	if (isinstance(root, SymbolNode)):
+		return root.name
+	elif (isinstance(root, UnaryOperatorNode)):
+		if(isinstance(root.operand, SymbolNode)):
+			return '~' + print_normal_rec(root.operand)
+		else:
+			return '~(' + print_normal_rec(root.operand) + ')' 
+	elif (isinstance(root, BinaryOperatorNode)):
+		return '(' + print_normal_rec(root.operand1) + ' ' + root.type + ' ' + print_normal_rec(root.operand2) + ')'
+
+def cnf_to_set(root: LogicNode):
+	set_of_clauses = set()
+	clause_lits = set()
+	if (isinstance(root, BinaryOperatorNode) and root.type == '&'):
+		set_of_clauses.add(cnf_to_set(root.operand1))
+		set_of_clauses.add(cnf_to_set(root.operand2))
+	elif (isinstance(root, BinaryOperatorNode) and root.type == '|'):
+		if(isinstance(root.operand1, UnaryOperatorNode)):
+			clause_lits.add('~' + root.operand2.name)
+		else:
+			clause_lits.add(root.name)
+		if(isinstance(root.operand2, UnaryOperatorNode)):
+			clause_lits.add('~' + root.operand2.name)
+		else:
+			clause_lits.add(root.name)
+		set_of_clauses.add(clause_lits)
+	return set_of_clauses
+
+def resolve(clauses):
+	to_remove = set()
+	for clause1 in clauses:
+		for clause2 in clauses:
+			if(clause1 == clause2):
+				continue
+			for literal1 in clause1:
+				temp_clause = set()
+				for literal2 in clause1:
+					if literal1 != literal2:
+						temp_clause.add(literal2)
+				temp_clause.add(negate_lit(literal1))
+				if(clause2 == temp_clause):
+					to_remove.add(clause2)
+	return clauses.difference(to_remove)
 
 def show_formula(str_inp):
 	symbol_set,formula = parse_string(str_inp)
