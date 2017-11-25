@@ -3,5 +3,5 @@ sub ~((P2 -> P4) -> (P3 & P4))
 tt (((P2 -> P1) | ~P2) <-> P2)
 ecnf ((A -> B) | ((A & ~C) <-> B))
 res (((P -> Q) -> (R -> S)) & (Q -> R))
-valid ((((A -> B) & (B -> C)) -> (A | B)) -> C)
-ent (((A -> B) & (B -> C)) -> (A | B)) C
+valid (((A -> B) & (B -> C)) -> ((A | B) -> C))
+ent ((A -> B) & (B -> C)) ((A | B) -> C)
