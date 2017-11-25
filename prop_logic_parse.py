@@ -302,7 +302,7 @@ def negate(operand: LogicNode):
 	else:
 		return UnaryOperatorNode('~',operand)
 
-def negate_simplify(operand: LogicNode):
+def negate_deep_simplify(operand: LogicNode):
 	if (not isinstance(operand,LogicNode)):
 		raise TypeError('operand must be an instance of LogicNode')
 	else:
