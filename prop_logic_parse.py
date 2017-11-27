@@ -438,7 +438,7 @@ def print_sub(root: LogicNode):
 	return "\n".join(str(e) if not isinstance(e, None) else "" for e in sub_rec(copy_formula(root)))
 
 def print_set(s):
-	return ", ".join(str(e) for e in s)
+	return "{" + ", ".join(str(e) for e in s) + "}"
 
 def sub(root: LogicNode):
 	return sub_rec(copy_formula(root))
@@ -495,6 +495,9 @@ def resolve(clauses):
 			temp_clause.add(frozen)
 	clauses = temp_clause
 
+	to_print = list(clauses)
+	original_size = len(to_print)
+	resolutions = []
 	cont = True
 	while cont:
 		cont = False
@@ -513,17 +516,28 @@ def resolve(clauses):
 							temp_clause.add(negate_simplify(literal1))
 				if to_be_resolved:
 					tmp = (clause1 | clause2).difference(temp_clause)
-					print("resolve {" + print_set(clause1) + "} with {" + print_set(clause2) + "}, resulting: {" + print_set(tmp) + "}")
 					prior_set = set(result_set)
 					result_set.add(tmp)
 					if prior_set != result_set:
 						cont = False
+						to_append = result_set.difference(prior_set)
+						to_print.append(to_append)
+						resolutions.append(" --- " + str(to_print.index(clause1) + 1) + ", " + str(to_print.index(clause2) + 1))
 					if len(tmp) == 0:
+						for i in range(to_print):
+							print(i + ": " + to_print[i])
 						return set()
 				result_set.add(clause1)
 	for s in result_set:
 		if len(s) == 0:
 			return set()
+	count = 0
+	for i in range(len(to_print)):
+		if i >= original_size:
+			print(str(i+1) + ": " + print_set(to_print[i]) + resolutions[count])	
+			count += 1
+		else:
+			print(str(i+1) + ": " + print_set(to_print[i]))
 	return result_set
 
 def show_formula(str_inp):
@@ -540,8 +554,8 @@ def show_formula(str_inp):
 	# print('Truth table:')
 	# truth_table = build_truth_table(formula, symbol_set)
 	# print(np.array(truth_table))
-	print("subtrees: ")
-	sub(formula)
+	# print("subtrees: ")
+	# sub(formula)
 	print('resolution: ' + print_set(resolve(get_set_of_clauses(to_cnf(formula)))))
 
 if __name__ == '__main__':
@@ -564,7 +578,7 @@ if __name__ == '__main__':
 	# f_str = '~~~~~~~~~A'
 	# f_str = '(((P -> Q) -> (R -> S)) & (Q -> R))'
 	# f_str = '((~A | B) & (~B | C))'
-	f_str = '(((~A | B) & (~B | C)) & (~C | ~A))'
+	# f_str = '(((A -> B) & (B -> C)) -> (A | B))'
 	# f_str = '(((A | ~B) & B) & ~A)'
 	show_formula(f_str)
 	symbol_set,formula = parse_string(f_str)
