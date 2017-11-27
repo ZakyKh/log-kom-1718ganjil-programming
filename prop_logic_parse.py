@@ -435,7 +435,7 @@ def build_truth_table(formula: LogicNode, symbol_set):
 	return table
 
 def print_sub(root: LogicNode):
-	return "\n".join(str(e) for e in sub_rec(copy_formula(root)))
+	return "\n".join(str(e) if not isinstance(e, None) else "" for e in sub_rec(copy_formula(root)))
 
 def print_set(s):
 	return ", ".join(str(e) for e in s)
@@ -513,7 +513,7 @@ def resolve(clauses):
 							temp_clause.add(negate_simplify(literal1))
 				if to_be_resolved:
 					tmp = (clause1 | clause2).difference(temp_clause)
-					print("resolve {" + print_set(clause1) + "} with {" + print_set(clause2) + "}, resulting: " + print_set(tmp))
+					print("resolve {" + print_set(clause1) + "} with {" + print_set(clause2) + "}, resulting: {" + print_set(tmp) + "}")
 					prior_set = set(result_set)
 					result_set.add(tmp)
 					if prior_set != result_set:
@@ -540,7 +540,8 @@ def show_formula(str_inp):
 	# print('Truth table:')
 	# truth_table = build_truth_table(formula, symbol_set)
 	# print(np.array(truth_table))
-	# print('subtrees: ' + print_sub(formula))
+	print("subtrees: ")
+	sub(formula)
 	print('resolution: ' + print_set(resolve(get_set_of_clauses(to_cnf(formula)))))
 
 if __name__ == '__main__':
