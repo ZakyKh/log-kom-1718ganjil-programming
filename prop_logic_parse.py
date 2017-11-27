@@ -500,7 +500,6 @@ def resolve(clauses):
 	clause_map = {}
 	counter = 0
 	sorted_clauses = sort_clauses(clauses)
-	print('CNF:',format_set_of_sets(sorted_clauses))
 	resolutions = []
 	for clause in sorted_clauses:
 		clause_key = frozenset(clause)
@@ -509,7 +508,6 @@ def resolve(clauses):
 		resolutions.append((None,counter,False))
 	resolved_pairs = set()
 	cont = True
-	counter = 0
 	while cont:
 # <<<<<<< HEAD
 		old_clauses = clauses
@@ -520,6 +518,7 @@ def resolve(clauses):
 # >>>>>>> 2fcae76141594c0374e81550e72731604f905244
 		result_set = set()
 		found_empty_clause = False
+		# print(clause_map)
 		for clause1 in clauses:
 			for clause2 in clauses:
 				clause1_idx = clause_map[clause1]
@@ -532,6 +531,7 @@ def resolve(clauses):
 					literal2 = negate_simplify(literal1)
 					if(literal2 in clause2):
 						resolvent = (clause1 | clause2).difference(set([literal1,literal2]))
+						# print(clause_idx_pair,resolvent)
 						resolved_pairs.add(clause_idx_pair)
 						if (len(resolvent) == 0):
 							found_empty_clause = True
