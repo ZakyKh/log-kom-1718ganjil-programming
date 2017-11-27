@@ -563,8 +563,7 @@ if __name__ == '__main__':
 	# f_str = '~~~~~~~~~A'
 	# f_str = '(((P -> Q) -> (R -> S)) & (Q -> R))'
 	# f_str = '((~A | B) & (~B | C))'
-	# f_str = '(((~A | B) & (~B | C)) & (~C | ~A))'
+	f_str = '(((~A | B) & (~B | C)) & (~C | ~A))'
 	# f_str = '(((A | ~B) & B) & ~A)'
-	f_str = '(((a | b) & ~a) & ~b)'
 	show_formula(f_str)
 	symbol_set,formula = parse_string(f_str)
