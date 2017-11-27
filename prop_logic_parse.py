@@ -476,24 +476,6 @@ def print_normal_rec(root: LogicNode):
 	elif (isinstance(root, BinaryOperatorNode)):
 		return '(' + print_normal_rec(root.operand1) + ' ' + root.type + ' ' + print_normal_rec(root.operand2) + ')'
 
-# def cnf_to_set(root: LogicNode):
-# 	set_of_clauses = set()
-# 	clause_lits = set()
-# 	if (isinstance(root, BinaryOperatorNode) and root.type == '&'):
-# 		set_of_clauses.add(cnf_to_set(root.operand1))
-# 		set_of_clauses.add(cnf_to_set(root.operand2))
-# 	elif (isinstance(root, BinaryOperatorNode) and root.type == '|'):
-# 		if(isinstance(root.operand1, UnaryOperatorNode)):
-# 			clause_lits.add('~' + root.operand1.operand.name)
-# 		else:
-# 			clause_lits.add(root.operand1.name)
-# 		if(isinstance(root.operand2, UnaryOperatorNode)):
-# 			clause_lits.add('~' + root.operand2.operand.name)
-# 		else:
-# 			clause_lits.add(root.operand1.name)
-# 		set_of_clauses.add(clause_lits)
-# 	return set_of_clauses
-
 def resolve(clauses):
 	to_print = list(clauses)
 	original_size = len(to_print)
@@ -509,16 +491,9 @@ def resolve(clauses):
 	resolved_pairs = set()
 	cont = True
 	while cont:
-# <<<<<<< HEAD
 		old_clauses = clauses
-# =======
-		# to_print = list(clauses)
-		# counter += 1
-		# cont = False
-# >>>>>>> 2fcae76141594c0374e81550e72731604f905244
 		result_set = set()
 		found_empty_clause = False
-		# print(clause_map)
 		for clause1 in clauses:
 			for clause2 in clauses:
 				clause1_idx = clause_map[clause1]
@@ -527,11 +502,9 @@ def resolve(clauses):
 				if (clause1_idx >= clause2_idx or clause_idx_pair in resolved_pairs):
 					continue
 				for literal1 in clause1:
-# <<<<<<< HEAD
 					literal2 = negate_simplify(literal1)
 					if(literal2 in clause2):
 						resolvent = (clause1 | clause2).difference(set([literal1,literal2]))
-						# print(clause_idx_pair,resolvent)
 						resolved_pairs.add(clause_idx_pair)
 						if (len(resolvent) == 0):
 							found_empty_clause = True
@@ -541,7 +514,8 @@ def resolve(clauses):
 							counter += 1
 							clause_map[resolvent] = counter
 							resolutions.append((clause_idx_pair,counter,True))
-						result_set.add(resolvent)
+						if (simplify_set_of_literals(resolvent)) is not None:
+							result_set.add(resolvent)
 				if found_empty_clause:
 					break
 			if found_empty_clause:
@@ -554,44 +528,6 @@ def resolve(clauses):
 		idx = clause_map[clause]
 		clause_list[idx] = clause
 	return resolutions,clause_list,found_empty_clause
-# =======
-					# for literal2 in clause2:
-						# if(negate_simplify(literal1) == literal2):
-							# to_be_resolved = True
-							# temp_clause.add(literal1)
-							# temp_clause.add(negate_simplify(literal1))
-				# if to_be_resolved:
-					# tmp = (clause1 | clause2).difference(temp_clause)
-					# prior_set = set(result_set)
-					# result_set.add(tmp)
-					# if prior_set != result_set:
-						# cont = True
-						# to_append = result_set.difference(prior_set)
-						# to_print.append(to_append)
-						# resolutions.append(" --- " + str(to_print.index(clause1) + 1) + ", " + str(to_print.index(clause2) + 1))
-					# if len(tmp) == 0:
-						# count = 0
-						# for i in range(len(to_print)):
-							# if i >= original_size:
-								# print(str(i+1) + ": " + print_set(to_print[i]) + resolutions[count])	
-								# count += 1
-							# else:
-								# print(str(i+1) + ": " + print_set(to_print[i]))
-						# return set()
-				# result_set.add(clause1)
-		# clauses = result_set
-	# for s in result_set:
-		# if len(s) == 0:
-			# return set()
-	# count = 0
-	# for i in range(len(to_print)):
-		# if i >= original_size:
-			# print(str(i+1) + ": " + print_set(to_print[i]) + resolutions[count])	
-			# count += 1
-		# else:
-			# print(str(i+1) + ": " + print_set(to_print[i]))
-	# return result_set
-# >>>>>>> 2fcae76141594c0374e81550e72731604f905244
 
 def show_formula(str_inp):
 	symbol_set,formula = parse_string(str_inp)
@@ -611,8 +547,8 @@ def show_formula(str_inp):
 	subformula_list,subformula_set = sub(to_nnf(formula))
 	print('\n'.join(str(e) for e in subformula_list))
 	print(to_nnf(formula),'has',len(subformula_set),'different subformulas')
-	print('resolution process:')
-	result = resolve(set_of_clauses)
+	# print('resolution process:')
+	# result = resolve(set_of_clauses)
 	# print('unsatisfiable' if (len(result) == 1 and len(next(iter(result))) == 0) else 'satisfiable')
 	# print('subtrees: ')
 	# sub(formula)

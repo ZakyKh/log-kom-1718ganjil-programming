@@ -1,0 +1,5 @@
+4
+ent (A | B) (A & B)
+ent (A & B) (A | B)
+ent (A & B) (A & B)
+ent (A | B) (A | B)
