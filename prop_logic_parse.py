@@ -499,7 +499,10 @@ def resolve(clauses):
 	original_size = len(to_print)
 	resolutions = []
 	cont = True
+	counter = 0
 	while cont:
+		to_print = list(clauses)
+		counter += 1
 		cont = False
 		result_set = set()
 		for clause1 in clauses:
@@ -519,16 +522,21 @@ def resolve(clauses):
 					prior_set = set(result_set)
 					result_set.add(tmp)
 					if prior_set != result_set:
+						cont = True
 						to_append = result_set.difference(prior_set)
 						to_print.append(to_append)
 						resolutions.append(" --- " + str(to_print.index(clause1) + 1) + ", " + str(to_print.index(clause2) + 1))
-					else:
-						cont = False
 					if len(tmp) == 0:
-						for i in range(to_print):
-							print(i + ": " + to_print[i])
+						count = 0
+						for i in range(len(to_print)):
+							if i >= original_size:
+								print(str(i+1) + ": " + print_set(to_print[i]) + resolutions[count])	
+								count += 1
+							else:
+								print(str(i+1) + ": " + print_set(to_print[i]))
 						return set()
 				result_set.add(clause1)
+		clauses = result_set
 	for s in result_set:
 		if len(s) == 0:
 			return set()
@@ -577,9 +585,9 @@ if __name__ == '__main__':
 	# f_str = '(F -> G)'
 	# f_str = '(G -> F)'
 	# f_str = '~~~~~~~~~A'
-	f_str = '(((P -> Q) -> (R -> S)) & (Q -> R))'
+	# f_str = '(((P -> Q) -> (R -> S)) & (Q -> R))'
 	# f_str = '((~A | B) & (~B | C))'
 	# f_str = '(((A -> B) & (B -> C)) -> (A | B))'
-	# f_str = '(((A | ~B) & B) & ~A)'
+	f_str = '(((A | ~B) & B) & ~A)'
 	show_formula(f_str)
 	symbol_set,formula = parse_string(f_str)
