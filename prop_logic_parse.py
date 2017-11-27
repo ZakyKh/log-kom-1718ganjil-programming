@@ -519,10 +519,11 @@ def resolve(clauses):
 					prior_set = set(result_set)
 					result_set.add(tmp)
 					if prior_set != result_set:
-						cont = False
 						to_append = result_set.difference(prior_set)
 						to_print.append(to_append)
 						resolutions.append(" --- " + str(to_print.index(clause1) + 1) + ", " + str(to_print.index(clause2) + 1))
+					else:
+						cont = False
 					if len(tmp) == 0:
 						for i in range(to_print):
 							print(i + ": " + to_print[i])
@@ -576,7 +577,7 @@ if __name__ == '__main__':
 	# f_str = '(F -> G)'
 	# f_str = '(G -> F)'
 	# f_str = '~~~~~~~~~A'
-	# f_str = '(((P -> Q) -> (R -> S)) & (Q -> R))'
+	f_str = '(((P -> Q) -> (R -> S)) & (Q -> R))'
 	# f_str = '((~A | B) & (~B | C))'
 	# f_str = '(((A -> B) & (B -> C)) -> (A | B))'
 	# f_str = '(((A | ~B) & B) & ~A)'
