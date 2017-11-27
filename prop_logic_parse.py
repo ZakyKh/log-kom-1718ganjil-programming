@@ -439,11 +439,8 @@ def build_truth_table(formula: LogicNode, symbol_set):
 		i += 1
 	return table
 
-def print_set_of_sets(clauses):
-	return '{' + ', '.join(print_set(clause) for clause in clauses) + '}'
-
-def print_set(s):
-	return '{' + ', '.join(str(e) for e in s) + '}'
+def print_sub(root: LogicNode):
+	return '\n'.join(str(e) if not isinstance(e, None) else '' for e in sub_rec(copy_formula(root)))
 
 def sub(root: LogicNode):
 	return sub_rec(copy_formula(root))
@@ -498,47 +495,57 @@ def print_normal_rec(root: LogicNode):
 # 	return set_of_clauses
 
 def resolve(clauses):
-	condition = True
-	counter = 0
+	to_print = list(clauses)
+	original_size = len(to_print)
 	clause_map = {}
+	counter = 0
 	sorted_clauses = sort_clauses(clauses)
 	print('CNF:',format_set_of_sets(sorted_clauses))
+	resolutions = []
 	for clause in sorted_clauses:
 		clause_key = frozenset(clause)
 		counter += 1
 		clause_map[clause_key] = counter
-		print(counter,':',format_set(clause))
+		resolutions.append((None,counter,False))
 	resolved_pairs = set()
-	while condition:
+	cont = True
+	while cont:
 		old_clauses = clauses
 		result_set = set()
+		found_empty_clause = False
 		for clause1 in clauses:
 			for clause2 in clauses:
-				if (clause_map[clause1] >= clause_map[clause2] or (clause_map[clause1],clause_map[clause2]) in resolved_pairs):
+				clause1_idx = clause_map[clause1]
+				clause2_idx = clause_map[clause2]
+				clause_idx_pair = (clause1_idx,clause2_idx)
+				if (clause1_idx >= clause2_idx or clause_idx_pair in resolved_pairs):
 					continue
-				clause_pair = (clause_map[clause1],clause_map[clause2])
-				to_be_resolved = False
 				for literal1 in clause1:
 					literal2 = negate_simplify(literal1)
-					if literal2 in clause2:
-						resolvent = frozenset((clause1 | clause2).difference(set([literal1, literal2])))
-						if len(resolvent) == 0:
-							counter += 1
-							print(counter,': ',print_set(resolvent),'---',clause_pair)
-							return set([frozenset()])
+					if(literal2 in clause2):
+						resolvent = (clause1 | clause2).difference(set([literal1,literal2]))
+						resolved_pairs.add(clause_idx_pair)
+						if (len(resolvent) == 0):
+							found_empty_clause = True
+						if resolvent in clause_map.keys():
+							resolutions.append((clause_idx_pair,clause_map[resolvent],False))
 						else:
-							if resolvent in clause_map.keys():
-								print('...',clause_pair,'yields clause at',clause_map[resolvent])
-							else:
-								counter += 1
-								clause_map[resolvent] = counter
-								resolved_pairs.add(clause_pair)
-								print(counter,': ',print_set(resolvent),'---',clause_pair)
-							result_set.add(resolvent)
-		clauses = clauses.union(result_set)
-		if (clauses == old_clauses):
-			condition = False
-	return clauses
+							counter += 1
+							clause_map[resolvent] = counter
+							resolutions.append((clause_idx_pair,counter,True))
+						result_set.add(resolvent)
+				if found_empty_clause:
+					break
+			if found_empty_clause:
+				break
+		clauses = clauses | result_set
+		if found_empty_clause or old_clauses == clauses:
+			cont = False
+	clause_list = [None] * (len(clause_map) + 1)
+	for clause in clause_map.keys():
+		idx = clause_map[clause]
+		clause_list[idx] = clause
+	return resolutions,clause_list,found_empty_clause
 
 def show_formula(str_inp):
 	symbol_set,formula = parse_string(str_inp)
@@ -556,11 +563,14 @@ def show_formula(str_inp):
 	# print(np.array(truth_table))
 	print('Subformulas:')
 	subformula_list,subformula_set = sub(to_nnf(formula))
-	print("\n".join(str(e) for e in subformula_list))
+	print('\n'.join(str(e) for e in subformula_list))
 	print(to_nnf(formula),'has',len(subformula_set),'different subformulas')
 	print('resolution process:')
 	result = resolve(set_of_clauses)
-	print('unsatisfiable' if (len(result) == 1 and len(next(iter(result))) == 0) else 'satisfiable')
+	# print('unsatisfiable' if (len(result) == 1 and len(next(iter(result))) == 0) else 'satisfiable')
+	# print('subtrees: ')
+	# sub(formula)
+	# print('resolution: ' + print_set(resolve(set_of_clauses)))
 
 if __name__ == '__main__':
 	# f_str = '(~(A -> B) & ((B | C) <-> A))'
@@ -582,7 +592,7 @@ if __name__ == '__main__':
 	# f_str = '~~~~~~~~~A'
 	# f_str = '(((P -> Q) -> (R -> S)) & (Q -> R))'
 	# f_str = '((~A | B) & (~B | C))'
-	# f_str = '(((~A | B) & (~B | C)) & (~C | ~A))'
+	# f_str = '(((A -> B) & (B -> C)) -> (A | B))'
 	# f_str = '(((A | ~B) & B) & ~A)'
 	f_str = '~(((A -> B) & (B -> C)) -> ((A | B) -> C))'
 	show_formula(f_str)
