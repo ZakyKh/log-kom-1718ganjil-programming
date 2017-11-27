@@ -367,22 +367,27 @@ def simplify_set_of_literals(literals):
 	return new_set
 
 def sort_clauses(clauses):
-	return sorted([sort_literals(x) for x in clauses], key=lambda x:str(x))
+	return sorted([sort_literals(x) for x in clauses], key=str)
 
 def sort_literals(literals):
-	return sorted([str(x) for x in literals], key=lambda x:str(x))
+	return sorted([x for x in literals], key=str)
 
 def format_set_of_sets(clause_list):
 	str_out = ''
 	str_out += '{'
 	for i,clause in enumerate(clause_list):
-		str_out += '{'
-		for j,literal in enumerate(clause):
-			str_out += literal
-			if (j < len(clause)-1):
-				str_out += ', '
-		str_out += '}'
+		str_out += format_set(clause)
 		if (i < len(clause_list)-1):
+			str_out += ', '
+	str_out += '}'
+	return str_out
+
+def format_set(clause):
+	str_out = ''
+	str_out += '{'
+	for j,literal in enumerate(clause):
+		str_out += str(literal)
+		if (j < len(clause)-1):
 			str_out += ', '
 	str_out += '}'
 	return str_out
@@ -434,24 +439,31 @@ def build_truth_table(formula: LogicNode, symbol_set):
 		i += 1
 	return table
 
-def print_sub(root: LogicNode):
-	return "\n".join(str(e) for e in sub_rec(copy_formula(root)))
+def print_set_of_sets(clauses):
+	return '{' + ', '.join(print_set(clause) for clause in clauses) + '}'
 
 def print_set(s):
-	return ", ".join(str(e) for e in s)
+	return '{' + ', '.join(str(e) for e in s) + '}'
 
 def sub(root: LogicNode):
 	return sub_rec(copy_formula(root))
 
 def sub_rec(root: LogicNode):
-	to_print = set()
-	to_print.add(print_normal(root))
+	subformula_list = []
+	subformula_set = set()
+	subformula_list.append(root)
+	subformula_set.add(root)
 	if (isinstance(root, UnaryOperatorNode)):
-		to_print = to_print | sub_rec(root.operand)
+		subformula_list_child,subformula_set_child = sub(root.operand)
+		subformula_list.extend(subformula_list_child)
+		subformula_set = subformula_set | subformula_set_child
 	elif (isinstance(root, BinaryOperatorNode)):
-		to_print = to_print | sub_rec(root.operand1)
-		to_print = to_print | sub_rec(root.operand2)
-	return to_print
+		subformula_list_child1,subformula_set_child1 = sub(root.operand1)
+		subformula_list_child2,subformula_set_child2 = sub(root.operand2)
+		subformula_set = subformula_set | subformula_set_child1 | subformula_set_child2
+		subformula_list.extend(subformula_list_child1)
+		subformula_list.extend(subformula_list_child2)
+	return subformula_list,subformula_set
 
 def print_normal(root: LogicNode):
 	return print_normal_rec(root)
@@ -486,61 +498,69 @@ def print_normal_rec(root: LogicNode):
 # 	return set_of_clauses
 
 def resolve(clauses):
-	cont = False
-	temp_clause = set()
-
-	for clause in clauses:
-		temp_set = simplify_set_of_literals(clause)
-		if temp_set is None:
-			continue
-		else:
-			frozen = frozenset(temp_set)
-			temp_clause.add(frozen)
-	clauses = temp_clause
-
-	result_set = set()
-	for clause1 in clauses:
-		for clause2 in clauses:
-			to_be_resolved = False
-			temp_clause = set()
-			if(clause1 == clause2):
-				continue
-			for literal1 in clause1:
-				for literal2 in clause2:
-					if(negate_simplify(literal1) == literal2):
-						to_be_resolved = True
-						cont = True
-						temp_clause.add(literal1)
-						temp_clause.add(negate_simplify(literal1))
-			if to_be_resolved:
-				tmp = (clause1 | clause2).difference(temp_clause)
-				if len(tmp) == 0:
-					return set()
-				result_set.add(tmp)
-			result_set.add(clause1)
-	if cont:
-		result_set.add(frozenset(resolve(result_set)))
-	for s in result_set:
-		if len(s) == 0:
-			return set()
-	return result_set
+	condition = True
+	counter = 0
+	clause_map = {}
+	sorted_clauses = sort_clauses(clauses)
+	print('CNF:',format_set_of_sets(sorted_clauses))
+	for clause in sorted_clauses:
+		clause_key = frozenset(clause)
+		counter += 1
+		clause_map[clause_key] = counter
+		print(counter,':',format_set(clause))
+	resolved_pairs = set()
+	while condition:
+		old_clauses = clauses
+		result_set = set()
+		for clause1 in clauses:
+			for clause2 in clauses:
+				if (clause_map[clause1] >= clause_map[clause2] or (clause_map[clause1],clause_map[clause2]) in resolved_pairs):
+					continue
+				clause_pair = (clause_map[clause1],clause_map[clause2])
+				to_be_resolved = False
+				for literal1 in clause1:
+					literal2 = negate_simplify(literal1)
+					if literal2 in clause2:
+						resolvent = frozenset((clause1 | clause2).difference(set([literal1, literal2])))
+						if len(resolvent) == 0:
+							counter += 1
+							print(counter,': ',print_set(resolvent),'---',clause_pair)
+							return set([frozenset()])
+						else:
+							if resolvent in clause_map.keys():
+								print('...',clause_pair,'yields clause at',clause_map[resolvent])
+							else:
+								counter += 1
+								clause_map[resolvent] = counter
+								resolved_pairs.add(clause_pair)
+								print(counter,': ',print_set(resolvent),'---',clause_pair)
+							result_set.add(resolvent)
+		clauses = clauses.union(result_set)
+		if (clauses == old_clauses):
+			condition = False
+	return clauses
 
 def show_formula(str_inp):
 	symbol_set,formula = parse_string(str_inp)
-	# print('Original formula: ',formula)
-	# print('Symbols: ',symbol_set)
-	# print('Formula tree: ',repr(formula))
-	# print('Formula (without macro): ',open_macro(formula))
-	# print('Formula (in NNF): ',to_nnf(formula))
-	# print('Formula (in CNF): ',to_cnf(formula))
+	print('Original formula: ',formula)
+	print('Symbols: ',symbol_set)
+	print('Formula tree: ',repr(formula))
+	print('Formula (without macro): ',open_macro(formula))
+	print('Formula (in NNF): ',to_nnf(formula))
+	print('Formula (in CNF): ',to_cnf(formula))
 	set_of_clauses = simplify_cnf_set_of_sets(get_set_of_clauses(to_cnf(formula)))
 	sorted_clauses = sort_clauses(set_of_clauses)
 	print('CNF in set of sets: ', format_set_of_sets(sorted_clauses))
 	# print('Truth table:')
 	# truth_table = build_truth_table(formula, symbol_set)
 	# print(np.array(truth_table))
-	# print('subtrees: ' + print_sub(formula))
-	print('resolution: ' + print_set(resolve(get_set_of_clauses(to_cnf(formula)))))
+	print('Subformulas:')
+	subformula_list,subformula_set = sub(to_nnf(formula))
+	print("\n".join(str(e) for e in subformula_list))
+	print(to_nnf(formula),'has',len(subformula_set),'different subformulas')
+	print('resolution process:')
+	result = resolve(set_of_clauses)
+	print('unsatisfiable' if (len(result) == 1 and len(next(iter(result))) == 0) else 'satisfiable')
 
 if __name__ == '__main__':
 	# f_str = '(~(A -> B) & ((B | C) <-> A))'
@@ -562,7 +582,8 @@ if __name__ == '__main__':
 	# f_str = '~~~~~~~~~A'
 	# f_str = '(((P -> Q) -> (R -> S)) & (Q -> R))'
 	# f_str = '((~A | B) & (~B | C))'
-	f_str = '(((~A | B) & (~B | C)) & (~C | ~A))'
+	# f_str = '(((~A | B) & (~B | C)) & (~C | ~A))'
 	# f_str = '(((A | ~B) & B) & ~A)'
+	f_str = '~(((A -> B) & (B -> C)) -> ((A | B) -> C))'
 	show_formula(f_str)
 	symbol_set,formula = parse_string(f_str)
