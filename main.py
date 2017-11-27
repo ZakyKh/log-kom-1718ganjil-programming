@@ -36,20 +36,20 @@ def print_equivalent_cnf(formula: prop_logic_parse.LogicNode):
 	symbol_set,formula_root = formula
 	formula_cnf = prop_logic_parse.to_cnf(formula_root)
 	clauses = prop_logic_parse.simplify_cnf_set_of_sets(prop_logic_parse.get_set_of_clauses(formula_cnf))
-	print(prop_logic_parse.format_set_of_sets(prop_logic_parse.sort_clauses(clauses)))
+	print(prop_logic_parse.sort_stringify_set_of_sets(clauses))
 
 def print_resolution_process(formula: prop_logic_parse.LogicNode):
 	symbol_set,formula_root = formula
 	formula_root_cnf = prop_logic_parse.to_cnf(formula_root)
 	set_of_clauses = prop_logic_parse.simplify_cnf_set_of_sets(prop_logic_parse.get_set_of_clauses(formula_root_cnf))
-	print('CNF:',prop_logic_parse.format_set_of_sets(prop_logic_parse.sort_clauses(set_of_clauses)))
+	print('CNF:',prop_logic_parse.sort_stringify_set_of_sets(set_of_clauses))
 	resolutions,clause_list,unsatisfiable = prop_logic_parse.resolve(set_of_clauses)
 	for resolution_step in resolutions:
 		clause_idx_pair, resolvent_idx, is_new_clause = resolution_step
 		if clause_idx_pair is None:
-			print(str(resolvent_idx) + ': ',print_set(clause_list[resolvent_idx]))
+			print(str(resolvent_idx) + ': ', prop_logic_parse.sort_stringify_set_of_literals(clause_list[resolvent_idx]))
 		elif is_new_clause:
-			print(str(resolvent_idx) + ': ',print_set(clause_list[resolvent_idx]),'---',clause_idx_pair)
+			print(str(resolvent_idx) + ': ',prop_logic_parse.sort_stringify_set_of_literals(clause_list[resolvent_idx]),'---',clause_idx_pair)
 		else:
 			print('...',clause_idx_pair,'yields clause at',resolvent_idx)
 	if (unsatisfiable):
@@ -103,6 +103,8 @@ def get_formulas(str_inp):
 if __name__ == '__main__':
 	n = int(input())
 	for i in range(n):
+		if i > 0:
+			print()
 		inp_split = input().split(maxsplit=1)
 		cmd = inp_split[0]
 		formulas = get_formulas(inp_split[1])

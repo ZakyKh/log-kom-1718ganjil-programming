@@ -529,6 +529,12 @@ def resolve(clauses):
 		clause_list[idx] = clause
 	return resolutions,clause_list,found_empty_clause
 
+def sort_stringify_set_of_sets(clauses):
+	return format_set_of_sets(sort_clauses(clauses)) 
+
+def sort_stringify_set_of_literals(clause):
+	return format_set(sort_literals(clause))
+
 def show_formula(str_inp):
 	symbol_set,formula = parse_string(str_inp)
 	print('Original formula: ',formula)
