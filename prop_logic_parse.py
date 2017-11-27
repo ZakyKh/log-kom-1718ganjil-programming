@@ -509,8 +509,15 @@ def resolve(clauses):
 		resolutions.append((None,counter,False))
 	resolved_pairs = set()
 	cont = True
+	counter = 0
 	while cont:
+# <<<<<<< HEAD
 		old_clauses = clauses
+# =======
+		# to_print = list(clauses)
+		# counter += 1
+		# cont = False
+# >>>>>>> 2fcae76141594c0374e81550e72731604f905244
 		result_set = set()
 		found_empty_clause = False
 		for clause1 in clauses:
@@ -521,6 +528,7 @@ def resolve(clauses):
 				if (clause1_idx >= clause2_idx or clause_idx_pair in resolved_pairs):
 					continue
 				for literal1 in clause1:
+# <<<<<<< HEAD
 					literal2 = negate_simplify(literal1)
 					if(literal2 in clause2):
 						resolvent = (clause1 | clause2).difference(set([literal1,literal2]))
@@ -546,6 +554,44 @@ def resolve(clauses):
 		idx = clause_map[clause]
 		clause_list[idx] = clause
 	return resolutions,clause_list,found_empty_clause
+# =======
+					# for literal2 in clause2:
+						# if(negate_simplify(literal1) == literal2):
+							# to_be_resolved = True
+							# temp_clause.add(literal1)
+							# temp_clause.add(negate_simplify(literal1))
+				# if to_be_resolved:
+					# tmp = (clause1 | clause2).difference(temp_clause)
+					# prior_set = set(result_set)
+					# result_set.add(tmp)
+					# if prior_set != result_set:
+						# cont = True
+						# to_append = result_set.difference(prior_set)
+						# to_print.append(to_append)
+						# resolutions.append(" --- " + str(to_print.index(clause1) + 1) + ", " + str(to_print.index(clause2) + 1))
+					# if len(tmp) == 0:
+						# count = 0
+						# for i in range(len(to_print)):
+							# if i >= original_size:
+								# print(str(i+1) + ": " + print_set(to_print[i]) + resolutions[count])	
+								# count += 1
+							# else:
+								# print(str(i+1) + ": " + print_set(to_print[i]))
+						# return set()
+				# result_set.add(clause1)
+		# clauses = result_set
+	# for s in result_set:
+		# if len(s) == 0:
+			# return set()
+	# count = 0
+	# for i in range(len(to_print)):
+		# if i >= original_size:
+			# print(str(i+1) + ": " + print_set(to_print[i]) + resolutions[count])	
+			# count += 1
+		# else:
+			# print(str(i+1) + ": " + print_set(to_print[i]))
+	# return result_set
+# >>>>>>> 2fcae76141594c0374e81550e72731604f905244
 
 def show_formula(str_inp):
 	symbol_set,formula = parse_string(str_inp)
@@ -594,6 +640,7 @@ if __name__ == '__main__':
 	# f_str = '((~A | B) & (~B | C))'
 	# f_str = '(((A -> B) & (B -> C)) -> (A | B))'
 	# f_str = '(((A | ~B) & B) & ~A)'
-	f_str = '~(((A -> B) & (B -> C)) -> ((A | B) -> C))'
+	# f_str = '~(((A -> B) & (B -> C)) -> ((A | B) -> C))'
+	f_str = '(((A | ~B) & B) & ~A)'
 	show_formula(f_str)
 	symbol_set,formula = parse_string(f_str)
